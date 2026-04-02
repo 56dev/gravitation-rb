@@ -4,6 +4,12 @@ typedef struct obj_s {
     float mass; 
     Vector2 pos_px; 
 } obj_s;
+
+typedef struct vec_s {
+    float len_px;
+    float angle_rad;
+} vec_s;
+
 void draw_vec_dir(Vector2 pos, float len_px, float angle_rad, Color col){
     Vector2 end_pos = (Vector2){pos.x + len_px * cos(angle_rad), pos.y + len_px * sin(angle_rad)};
     DrawLineEx(pos, end_pos, 1.0f, col);
@@ -16,10 +22,12 @@ void draw_vec_dir(Vector2 pos, float len_px, float angle_rad, Color col){
 
 }
 
-void calc_g_field_at_point(Vector2 point, obj_s *obj_a, int obj_n){
+ calc_g_field_at_point(Vector2 point, obj_s *obj_a, int obj_n){
     for(int i = 0; i < obj_n; ++i) {
-        float dx = obj_a[i].pos_
-        float r = sqrt()
+        float dx = point.x - obj_a[i].pos_px.x;
+        float dy = point.y - obj_a[i].pos_px.y;
+        float rsq = dx * dx + dy * dy;
+        
     }    
 }
 
