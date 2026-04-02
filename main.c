@@ -5,10 +5,6 @@ typedef struct obj_s {
     Vector2 pos_px; 
 } obj_s;
 
-typedef struct vec_s {
-    float len_px;
-    float angle_rad;
-} vec_s;
 
 void draw_vec_dir(Vector2 pos, float len_px, float angle_rad, Color col){
     Vector2 end_pos = (Vector2){pos.x + len_px * cos(angle_rad), pos.y + len_px * sin(angle_rad)};
@@ -22,13 +18,18 @@ void draw_vec_dir(Vector2 pos, float len_px, float angle_rad, Color col){
 
 }
 
- calc_g_field_at_point(Vector2 point, obj_s *obj_a, int obj_n){
+Vector2 calc_g_field_at_point(Vector2 point, obj_s *obj_a, int obj_n){
+    Vector2 ret = (Vector2){0, 0};
     for(int i = 0; i < obj_n; ++i) {
         float dx = point.x - obj_a[i].pos_px.x;
         float dy = point.y - obj_a[i].pos_px.y;
         float rsq = dx * dx + dy * dy;
-        
-    }    
+        float mag = obj_a[i].mass / rsq; //we don't necessarily need the gravitational constant right now
+        float thet = atan(dy / dx);
+        ret.x += mag * cos(thet);    
+        ret.y += mag * sin(thet);
+    }
+    return ret;
 }
 
 int main(void) {
