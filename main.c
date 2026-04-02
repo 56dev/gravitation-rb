@@ -18,6 +18,17 @@ void draw_vec_dir(Vector2 pos, float len_px, float angle_rad, Color col){
 
 }
 
+void draw_vec_pos(Vector2 pos, Vector2 end, Color col){
+    DrawLineEx(pos, end_pos, 1.0f, col);
+    const float tri_hi = 9.0f;
+    const float tri_b_h = 4.0f;
+    Vector2 v1 = (Vector2){end_pos.x + tri_hi * cos(angle_rad), end_pos.y + tri_hi * sin(angle_rad)};
+    Vector2 v2 = (Vector2){end_pos.x + tri_b_h * cos(angle_rad + PI/2), end_pos.y + tri_b_h * sin(angle_rad + PI/2)};
+    Vector2 v3 =  (Vector2){end_pos.x + tri_b_h * cos(angle_rad - PI/2), end_pos.y + tri_b_h * sin(angle_rad - PI/2)};
+    DrawTriangle(v3, v2, v1, col);
+
+}
+
 Vector2 calc_g_field_at_point(Vector2 point, obj_s *obj_a, int obj_n){
     Vector2 ret = (Vector2){0, 0};
     for(int i = 0; i < obj_n; ++i) {
@@ -38,12 +49,19 @@ int main(void) {
     InitWindow(screen_width, screen_height, "gravitation");
     SetTargetFPS(60);
     const int vec_spacing = 15;
+    #define num_obj 1
+    const obj_s objects[num_obj] = {(obj_s){1.0f, (Vector2){screen_width/2, screen_height/2}}};
     while (!WindowShouldClose()) {
 
         BeginDrawing();
             ClearBackground(RAYWHITE);
             for(int x = 0; x < screen_width; x += vec_spacing){
                 for(int y = 0; y < screen_height; y += vec_spacing){
+                    Vector2 n;
+                    for(int i = 0; i < num_obj; ++i){
+                        n = calc_g_field_at_point((Vector2{x, y}, objects, num_obj));
+                    }
+
                     draw_vec_dir((Vector2){x, y}, 10.0f, 0.0f, GREEN);
                 }
             }
