@@ -18,13 +18,16 @@ void draw_vec_dir(Vector2 pos, float len_px, float angle_rad, Color col){
 
 }
 
-void draw_vec_pos(Vector2 pos, Vector2 end, Color col){
-    DrawLineEx(pos, end_pos, 1.0f, col);
+void draw_vec_end(Vector2 pos, Vector2 to_end, Color col){
+    DrawLineEx(pos, to_end, 1.0f, col);
     const float tri_hi = 9.0f;
     const float tri_b_h = 4.0f;
-    Vector2 v1 = (Vector2){end_pos.x + tri_hi * cos(angle_rad), end_pos.y + tri_hi * sin(angle_rad)};
-    Vector2 v2 = (Vector2){end_pos.x + tri_b_h * cos(angle_rad + PI/2), end_pos.y + tri_b_h * sin(angle_rad + PI/2)};
-    Vector2 v3 =  (Vector2){end_pos.x + tri_b_h * cos(angle_rad - PI/2), end_pos.y + tri_b_h * sin(angle_rad - PI/2)};
+    float dx = to_end.x - pos.x;
+    float dy = to_end.y - pos.y;
+    float thet = atan(dy / dx);
+    Vector2 v1 = (Vector2){to_end.x + tri_hi * cos(thet), to_end.y + tri_hi * sin(thet)};
+    Vector2 v2 = (Vector2){to_end.x + tri_b_h * cos(thet + PI/2), to_end.y + tri_b_h * sin(thet + PI/2)};
+    Vector2 v3 =  (Vector2){to_end.x + tri_b_h * cos(thet - PI/2), to_end.y + tri_b_h * sin(thet - PI/2)};
     DrawTriangle(v3, v2, v1, col);
 
 }
@@ -50,7 +53,7 @@ int main(void) {
     SetTargetFPS(60);
     const int vec_spacing = 15;
     #define num_obj 1
-    const obj_s objects[num_obj] = {(obj_s){1.0f, (Vector2){screen_width/2, screen_height/2}}};
+    obj_s objects[num_obj] = {(obj_s){10.0f, (Vector2){screen_width/2, screen_height/2}}};
     while (!WindowShouldClose()) {
 
         BeginDrawing();
@@ -59,10 +62,10 @@ int main(void) {
                 for(int y = 0; y < screen_height; y += vec_spacing){
                     Vector2 n;
                     for(int i = 0; i < num_obj; ++i){
-                        n = calc_g_field_at_point((Vector2{x, y}, objects, num_obj));
+                        n = calc_g_field_at_point((Vector2){x, y}, objects, num_obj);
                     }
-
-                    draw_vec_dir((Vector2){x, y}, 10.0f, 0.0f, GREEN);
+                    //draw_vec_dir((Vector2){x, y}, 10.0f, 0.0f, GREEN);
+                    draw_vec_end((Vector2){x, y}, n, GREEN);
                 }
             }
         EndDrawing();
