@@ -1,6 +1,9 @@
 #include <raylib.h>
 #include <math.h>
-
+typedef struct obj_s {
+    float mass; 
+    float pos_px; 
+} obj_s;
 void draw_vec_dir(Vector2 pos, float len_px, float angle_rad, Color col){
     Vector2 end_pos = (Vector2){pos.x + len_px * cos(angle_rad), pos.y + len_px * sin(angle_rad)};
     DrawLineEx(pos, end_pos, 1.0f, col);
@@ -11,6 +14,13 @@ void draw_vec_dir(Vector2 pos, float len_px, float angle_rad, Color col){
     Vector2 v3 =  (Vector2){end_pos.x + tri_b_h * cos(angle_rad - PI/2), end_pos.y + tri_b_h * sin(angle_rad - PI/2)};
     DrawTriangle(v3, v2, v1, col);
 
+}
+
+void calc_g_field_at_point(Vector2 point, float *mass_a, int mass_n){
+    for(int i = 0; i < mass_n; ++i) {
+        float dx = po
+        float r = sqrt()
+    }    
 }
 
 int main(void) {
