@@ -19,7 +19,7 @@ void draw_vec_dir(Vector2 pos, float len_px, float angle_rad, Color col){
 }
 
 void draw_vec_end(Vector2 pos, Vector2 to_end, Color col){
-    DrawLineEx(pos, to_end, 1.0f, col);
+    DrawLineEx(pos, (Vector2){pos.x + to_end.x, pos.y + to_end.y}, 1.0f, col);
     const float tri_hi = 9.0f;
     const float tri_b_h = 4.0f;
     float dx = to_end.x - pos.x;
