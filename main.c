@@ -2,7 +2,7 @@
 #include <math.h>
 typedef struct obj_s {
     float mass; 
-    float pos_px; 
+    Vector2 pos_px; 
 } obj_s;
 void draw_vec_dir(Vector2 pos, float len_px, float angle_rad, Color col){
     Vector2 end_pos = (Vector2){pos.x + len_px * cos(angle_rad), pos.y + len_px * sin(angle_rad)};
@@ -16,9 +16,9 @@ void draw_vec_dir(Vector2 pos, float len_px, float angle_rad, Color col){
 
 }
 
-void calc_g_field_at_point(Vector2 point, float *mass_a, int mass_n){
-    for(int i = 0; i < mass_n; ++i) {
-        float dx = po
+void calc_g_field_at_point(Vector2 point, obj_s *obj_a, int obj_n){
+    for(int i = 0; i < obj_n; ++i) {
+        float dx = obj_a[i].pos_
         float r = sqrt()
     }    
 }
