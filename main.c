@@ -1,5 +1,6 @@
 #include <raylib.h>
 #include <math.h>
+#include <raymath.h>
 typedef struct obj_s {
     float mass; 
     Vector2 pos_px; 
@@ -10,7 +11,7 @@ void draw_vec_dir(Vector2 pos, float len_px, float angle_rad, Color col){
     Vector2 end_pos = (Vector2){pos.x + len_px * cos(angle_rad), pos.y + len_px * sin(angle_rad)};
     DrawLineEx(pos, end_pos, 1.0f, col);
     const float tri_hi = 9.0f;
-    const float tri_b_h = 4.0f;
+    const float tri_b_h = 2.0f;
     Vector2 v1 = (Vector2){end_pos.x + tri_hi * cos(angle_rad), end_pos.y + tri_hi * sin(angle_rad)};
     Vector2 v2 = (Vector2){end_pos.x + tri_b_h * cos(angle_rad + PI/2), end_pos.y + tri_b_h * sin(angle_rad + PI/2)};
     Vector2 v3 =  (Vector2){end_pos.x + tri_b_h * cos(angle_rad - PI/2), end_pos.y + tri_b_h * sin(angle_rad - PI/2)};
@@ -19,15 +20,27 @@ void draw_vec_dir(Vector2 pos, float len_px, float angle_rad, Color col){
 }
 
 void draw_vec_end(Vector2 pos, Vector2 to_end, Color col){
-    DrawLineEx(pos, (Vector2){pos.x + to_end.x, pos.y + to_end.y}, 1.0f, col);
+    if(fabs(to_end.x) < 0.1 && fabs(to_end.y) < 0.1) {
+        DrawCircle(pos.x, pos.y, 10.0f, col);
+        return;
+    }
+    Vector2 end = (Vector2){pos.x + to_end.x, pos.y + to_end.y};
+    DrawLineEx(pos, end, 1.0f, col);
+    float thet = atan(fabs(to_end.y / to_end.x));
+    if(to_end.y > 0 && to_end.x > 0) {
+        //do nothing
+    } else if(to_end.y > 0 && to_end.x < 0) {
+        thet = PI - thet;
+    } else if(to_end.y < 0 && to_end.x < 0) {
+        thet += PI;
+    } else if(to_end.y < 0 && to_end.x > 0) {
+        thet = 2 * PI - thet;
+    }
     const float tri_hi = 9.0f;
-    const float tri_b_h = 4.0f;
-    float dx = to_end.x - pos.x;
-    float dy = to_end.y - pos.y;
-    float thet = atan(dy / dx);
-    Vector2 v1 = (Vector2){to_end.x + tri_hi * cos(thet), to_end.y + tri_hi * sin(thet)};
-    Vector2 v2 = (Vector2){to_end.x + tri_b_h * cos(thet + PI/2), to_end.y + tri_b_h * sin(thet + PI/2)};
-    Vector2 v3 =  (Vector2){to_end.x + tri_b_h * cos(thet - PI/2), to_end.y + tri_b_h * sin(thet - PI/2)};
+    const float tri_b_h = 4.0f; 
+    Vector2 v1 = (Vector2){end.x + tri_hi * cos(thet), end.y + tri_hi * sin(thet)};
+    Vector2 v2 = (Vector2){end.x + tri_b_h * cos(thet + PI/2), end.y + tri_b_h * sin(thet + PI/2)};
+    Vector2 v3 =  (Vector2){end.x + tri_b_h * cos(thet - PI/2), end.y + tri_b_h * sin(thet - PI/2)};
     DrawTriangle(v3, v2, v1, col);
 
 }
@@ -39,9 +52,9 @@ Vector2 calc_g_field_at_point(Vector2 point, obj_s *obj_a, int obj_n){
         float dy = point.y - obj_a[i].pos_px.y;
         float rsq = dx * dx + dy * dy;
         float mag = obj_a[i].mass / rsq; //we don't necessarily need the gravitational constant right now
-        float thet = atan(dy / dx);
-        ret.x += mag * cos(thet);    
-        ret.y += mag * sin(thet);
+        Vector2 s = Vector2Normalize((Vector2){dx, dy});
+        ret.x += mag * s.x;    
+        ret.y += mag * s.y;
     }
     return ret;
 }
@@ -53,20 +66,28 @@ int main(void) {
     SetTargetFPS(60);
     const int vec_spacing = 15;
     #define num_obj 1
-    obj_s objects[num_obj] = {(obj_s){10.0f, (Vector2){screen_width/2, screen_height/2}}};
+    obj_s objects[num_obj] = {(obj_s){100.0f, (Vector2){screen_width/2, screen_height/2}}};
     while (!WindowShouldClose()) {
 
         BeginDrawing();
             ClearBackground(RAYWHITE);
             for(int x = 0; x < screen_width; x += vec_spacing){
                 for(int y = 0; y < screen_height; y += vec_spacing){
-                    Vector2 n;
+                    Vector2 g ;
                     for(int i = 0; i < num_obj; ++i){
-                        n = calc_g_field_at_point((Vector2){x, y}, objects, num_obj);
+                        g = calc_g_field_at_point((Vector2){x, y}, objects, num_obj);
                     }
                     //draw_vec_dir((Vector2){x, y}, 10.0f, 0.0f, GREEN);
-                    draw_vec_end((Vector2){x, y}, n, GREEN);
+                    Vector2 n = (Vector2){g.x * 75, g.y * 75};
+                    n = Vector2Clamp((Vector2){-10.0f, -10.0f}, (Vector2){10.0f, 10.0f}, n);
+                    float len = sqrt(n.x * n.x + n.y * n.y);
+                    float thet = atan2f(n.y,  n.x) + PI;
+                     draw_vec_dir((Vector2){x,y},len, thet, GREEN);
+                   // draw_vec_end((Vector2){x, y}, n, GREEN);
                 }
+            }
+            for(int i = 0; i < num_obj; ++i) {
+                DrawCircleV(objects[i].pos_px, 30.0f, RED);
             }
         EndDrawing();
     }
