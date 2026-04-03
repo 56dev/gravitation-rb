@@ -43,7 +43,8 @@ Vector2 calc_g_field_at_point(Vector2 point, obj_s *obj_a, int obj_n){
         float dx = obj_a[i].pos_px.x - point.x;
         float dy = obj_a[i].pos_px.y - point.y;
         float rsq = dx * dx + dy * dy;
-        float mag = 100 *  obj_a[i].mass / rsq; //we don't necessarily need the gravitational constant right now
+        const int G = 1000;
+        float mag = G  *  obj_a[i].mass / rsq;
         Vector2 s = Vector2Normalize((Vector2){dx, dy});
         ret.x += mag * s.x;    
         ret.y += mag * s.y;
@@ -52,13 +53,16 @@ Vector2 calc_g_field_at_point(Vector2 point, obj_s *obj_a, int obj_n){
 }
 
 int main(void) {
-    const int screen_width = 1600;
-    const int screen_height = 900;
+    const float screen_width = 1600;
+    const float screen_height = 900;
     InitWindow(screen_width, screen_height, "gravitation");
     SetTargetFPS(60);
     const int vec_spacing = 15;
-    #define num_obj 1
-    obj_s objects[num_obj] = {(obj_s){100.0f, (Vector2){screen_width/2, screen_height/2}}};
+    #define num_obj 2
+    obj_s objects[num_obj] = {
+        (obj_s){100.0f, (Vector2){screen_width/2, screen_height/2}},
+        (obj_s){300.0f, (Vector2){screen_width/4.0f, screen_height/2}}
+        };
     while (!WindowShouldClose()) {
         static bool f = false;
         BeginDrawing();
@@ -66,10 +70,17 @@ int main(void) {
             for(int x = 0; x < screen_width; x += vec_spacing){
                 for(int y = 0; y < screen_height; y += vec_spacing){
                     Vector2 g = calc_g_field_at_point((Vector2){x, y}, objects, num_obj);
-                    Vector2 disp = Vector2Clamp(g, (Vector2){-10, -10}, (Vector2){10, 10});
+                    float mag = sqrt(g.x * g.x + g.y * g.y);
+                    #define MAX_MAG 200 
+                    if(mag < 0) mag = 0;
+                    else if(mag > MAX_MAG) mag = MAX_MAG;
+                    Vector2 disp = Vector2Normalize(g);
+                    g.x *= mag;
+                    g.y *= mag;
                     Color col = GREEN;
-                    
-                    draw_vec_end((Vector2){x,y}, disp, GREEN);
+                    col.b = (mag / MAX_MAG) * 255;
+                    col.g = ((MAX_MAG - mag) / MAX_MAG) * 255;
+                    draw_vec_end((Vector2){x,y}, g, col);
 //                    DrawCircle(x, y, 2.0f, ORANGE);
                 }
             }
