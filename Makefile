@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Iinclude -Wall -Wextra $(shell pkg-config --cflags raylib)
+CFLAGS = -Iinclude -I../../extern_h -Wall -Wextra $(shell pkg-config --cflags raylib)
 LIBS  = $(shell pkg-config --libs raylib) -Llib -lopengl32 -lgdi32 -lwinmm -lcomdlg32
 SRC = main.c 
 all:main

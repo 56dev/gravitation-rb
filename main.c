@@ -1,7 +1,9 @@
+#define RAYGUI_IMPLEMENTATION
 #include <raylib.h>
+#include <raygui.h>
+#include <raymath.h>
 #include <stdio.h>
 #include <math.h>
-#include <raymath.h>
 typedef struct obj_s {
     float mass; 
     Vector2 pos_px; 
@@ -35,8 +37,6 @@ void draw_vec_end(Vector2 pos, Vector2 to_end, Color col){
     const float tri_b_h = 4.0f; 
     draw_arrowhead(thet, tri_hi, tri_b_h, end, col);
 }
-
-
 
 Vector2 calc_g_field_at_point_ignore_one_obj(Vector2 point, obj_s *obj_a, int obj_n, int idx_ignore){
     Vector2 ret = (Vector2){0, 0};
@@ -79,6 +79,7 @@ int main(void) {
         (obj_s){100.0f, (Vector2){screen_width/2, screen_height/2}, (Vector2){0,35.0f}},
         (obj_s){300.0f, (Vector2){screen_width/4.0f, screen_height/2}, (Vector2){20.0f, 0}}
         };
+
     while (!WindowShouldClose()) {
         BeginDrawing();
            ClearBackground(RAYWHITE);
@@ -96,7 +97,6 @@ int main(void) {
                     col.b = (mag / MAX_MAG) * 255;
                     col.g = ((MAX_MAG - mag) / MAX_MAG) * 255;
                     draw_vec_end((Vector2){x,y}, disp, col);
-                    
 //                    DrawCircle(x, y, 2.0f, ORANGE);
                 }
             }
@@ -104,7 +104,24 @@ int main(void) {
             for(int i = 0; i < num_obj; ++i) {
                 DrawCircleV(objects[i].pos_px,10.0f, RED);
             }
-       EndDrawing();
+
+
+
+            const float sett_pan_l = screen_width * 1/4.0f;
+            Vector2 scroll = (Vector2){0, 0};
+            Rectangle view = (Rectangle){0, 0, 0, 0};
+            Rectangle panel = (Rectangle){screen_width - sett_pan_l, 0, sett_pan_l, screen_height};
+            GuiScrollPanel(panel, "SETTINGS", 
+                    (Rectangle){0,0,sett_pan_l,screen_height*2}, &scroll, &view );
+            BeginScissorMode(view.x, view.y, view.width, view.height);
+                const float toggle_btns_h = 50.0f;
+                const float marg_x = 35.0f;
+                const float marg_y = 10.0f;
+                static bool toggle_active = false;
+                GuiToggle((Rectangle){view.x + marg_x - scroll.x, view.y + marg_y + scroll.y, view.width - marg_x*2, toggle_btns_h}, "TOGGLE ARROW STEMS", &toggle_active);
+                DrawRectangle(40 - scroll.x, 40 - scroll.y, 100, 100, GREEN);
+            EndScissorMode();
+            EndDrawing();
     }
 
     CloseWindow();
