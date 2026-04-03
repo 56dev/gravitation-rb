@@ -37,9 +37,10 @@ void draw_vec_end(Vector2 pos, Vector2 to_end, Color col){
 
 }
 
-Vector2 calc_g_field_at_point(Vector2 point, obj_s *obj_a, int obj_n){
+Vector2 calc_g_field_at_point_ignore_one_obj(Vector2 point, obj_s *obj_a, int obj_n, int idx_ignore){
     Vector2 ret = (Vector2){0, 0};
     for(int i = 0; i < obj_n; ++i) {
+        if(idx_ignore == i) continue;
         float dx = obj_a[i].pos_px.x - point.x;
         float dy = obj_a[i].pos_px.y - point.y;
         float rsq = dx * dx + dy * dy;
@@ -50,6 +51,18 @@ Vector2 calc_g_field_at_point(Vector2 point, obj_s *obj_a, int obj_n){
         ret.y += mag * s.y;
     }
     return ret;
+}
+Vector2 calc_g_field_at_point(Vector2 point, obj_s *obj_a, int obj_n){
+    calc_g_field_at_point_ignore_one_obj(point, obj_a, obj_n, -1);
+    
+}
+
+void update_objs(obj_s *obj_a, int n) {
+    for(int i = 0; i < n; ++i) {
+        //calculate g-field at obj's point
+        Vector2 g = calc_g_field_at_point_ignore_one_obj(obj_a[i].pos_px, obj_a, n, i); 
+        
+    }
 }
 
 int main(void) {
