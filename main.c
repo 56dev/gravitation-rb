@@ -83,6 +83,7 @@ int main(void) {
     while (!WindowShouldClose()) {
         BeginDrawing();
            ClearBackground(RAYWHITE);
+            static bool show_arrow_stems = false;
             for(int x = 0; x < screen_width; x += vec_spacing){
                 for(int y = 0; y < screen_height; y += vec_spacing){
                     Vector2 g = calc_g_field_at_point((Vector2){x, y}, objects, num_obj);
@@ -96,6 +97,7 @@ int main(void) {
                     Color col = GREEN;
                     col.b = (mag / MAX_MAG) * 255;
                     col.g = ((MAX_MAG - mag) / MAX_MAG) * 255;
+                    if(!show_arrow_stems) {disp.x /= mag * 5; disp.y /= mag * 5;}
                     draw_vec_end((Vector2){x,y}, disp, col);
 //                    DrawCircle(x, y, 2.0f, ORANGE);
                 }
@@ -117,8 +119,7 @@ int main(void) {
                 const float toggle_btns_h = 50.0f;
                 const float marg_x = 35.0f;
                 const float marg_y = 10.0f;
-                static bool toggle_active = false;
-                GuiToggle((Rectangle){view.x + marg_x - scroll.x, view.y + marg_y + scroll.y, view.width - marg_x*2, toggle_btns_h}, "TOGGLE ARROW STEMS", &toggle_active);
+                GuiToggle((Rectangle){view.x + marg_x - scroll.x, view.y + marg_y + scroll.y, view.width - marg_x*2, toggle_btns_h}, "TOGGLE ARROW STEMS", &show_arrow_stems);
                 DrawRectangle(40 - scroll.x, 40 - scroll.y, 100, 100, GREEN);
             EndScissorMode();
             EndDrawing();
