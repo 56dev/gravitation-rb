@@ -1,4 +1,5 @@
 #include <raylib.h>
+#include <stdio.h>
 #include <math.h>
 #include <raymath.h>
 typedef struct obj_s {
@@ -21,21 +22,12 @@ void draw_vec_dir(Vector2 pos, float len_px, float angle_rad, Color col){
 
 void draw_vec_end(Vector2 pos, Vector2 to_end, Color col){
     if(fabs(to_end.x) < 0.1 && fabs(to_end.y) < 0.1) {
-        DrawCircle(pos.x, pos.y, 10.0f, col);
+        DrawCircle(pos.x, pos.y, 2.0f, col);
         return;
     }
     Vector2 end = (Vector2){pos.x + to_end.x, pos.y + to_end.y};
     DrawLineEx(pos, end, 1.0f, col);
-    float thet = atan(fabs(to_end.y / to_end.x));
-    if(to_end.y > 0 && to_end.x > 0) {
-        //do nothing
-    } else if(to_end.y > 0 && to_end.x < 0) {
-        thet = PI - thet;
-    } else if(to_end.y < 0 && to_end.x < 0) {
-        thet += PI;
-    } else if(to_end.y < 0 && to_end.x > 0) {
-        thet = 2 * PI - thet;
-    }
+    float thet = atan2f(to_end.y, to_end.x);
     const float tri_hi = 9.0f;
     const float tri_b_h = 4.0f; 
     Vector2 v1 = (Vector2){end.x + tri_hi * cos(thet), end.y + tri_hi * sin(thet)};
@@ -48,10 +40,10 @@ void draw_vec_end(Vector2 pos, Vector2 to_end, Color col){
 Vector2 calc_g_field_at_point(Vector2 point, obj_s *obj_a, int obj_n){
     Vector2 ret = (Vector2){0, 0};
     for(int i = 0; i < obj_n; ++i) {
-        float dx = point.x - obj_a[i].pos_px.x;
-        float dy = point.y - obj_a[i].pos_px.y;
+        float dx = obj_a[i].pos_px.x - point.x;
+        float dy = obj_a[i].pos_px.y - point.y;
         float rsq = dx * dx + dy * dy;
-        float mag = obj_a[i].mass / rsq; //we don't necessarily need the gravitational constant right now
+        float mag = 100 *  obj_a[i].mass / rsq; //we don't necessarily need the gravitational constant right now
         Vector2 s = Vector2Normalize((Vector2){dx, dy});
         ret.x += mag * s.x;    
         ret.y += mag * s.y;
@@ -68,28 +60,24 @@ int main(void) {
     #define num_obj 1
     obj_s objects[num_obj] = {(obj_s){100.0f, (Vector2){screen_width/2, screen_height/2}}};
     while (!WindowShouldClose()) {
-
+        static bool f = false;
         BeginDrawing();
-            ClearBackground(RAYWHITE);
+           ClearBackground(RAYWHITE);
             for(int x = 0; x < screen_width; x += vec_spacing){
                 for(int y = 0; y < screen_height; y += vec_spacing){
-                    Vector2 g ;
-                    for(int i = 0; i < num_obj; ++i){
-                        g = calc_g_field_at_point((Vector2){x, y}, objects, num_obj);
-                    }
-                    //draw_vec_dir((Vector2){x, y}, 10.0f, 0.0f, GREEN);
-                    Vector2 n = (Vector2){g.x * 75, g.y * 75};
-                    n = Vector2Clamp((Vector2){-10.0f, -10.0f}, (Vector2){10.0f, 10.0f}, n);
-                    float len = sqrt(n.x * n.x + n.y * n.y);
-                    float thet = atan2f(n.y,  n.x) + PI;
-                     draw_vec_dir((Vector2){x,y},len, thet, GREEN);
-                   // draw_vec_end((Vector2){x, y}, n, GREEN);
+                    Vector2 g = calc_g_field_at_point((Vector2){x, y}, objects, num_obj);
+                    Vector2 disp = Vector2Clamp(g, (Vector2){-10, -10}, (Vector2){10, 10});
+                    Color col = GREEN;
+                    
+                    draw_vec_end((Vector2){x,y}, disp, GREEN);
+//                    DrawCircle(x, y, 2.0f, ORANGE);
                 }
             }
+            f = true;
             for(int i = 0; i < num_obj; ++i) {
-                DrawCircleV(objects[i].pos_px, 30.0f, RED);
+                DrawCircleV(objects[i].pos_px,10.0f, RED);
             }
-        EndDrawing();
+       EndDrawing();
     }
 
     CloseWindow();
