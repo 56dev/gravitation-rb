@@ -71,16 +71,16 @@ int main(void) {
                 for(int y = 0; y < screen_height; y += vec_spacing){
                     Vector2 g = calc_g_field_at_point((Vector2){x, y}, objects, num_obj);
                     float mag = sqrt(g.x * g.x + g.y * g.y);
-                    #define MAX_MAG 200 
+                    #define MAX_MAG 15 
                     if(mag < 0) mag = 0;
                     else if(mag > MAX_MAG) mag = MAX_MAG;
                     Vector2 disp = Vector2Normalize(g);
-                    g.x *= mag;
-                    g.y *= mag;
+                    disp.x *= mag;
+                    disp.y *= mag;
                     Color col = GREEN;
                     col.b = (mag / MAX_MAG) * 255;
                     col.g = ((MAX_MAG - mag) / MAX_MAG) * 255;
-                    draw_vec_end((Vector2){x,y}, g, col);
+                    draw_vec_end((Vector2){x,y}, disp, col);
 //                    DrawCircle(x, y, 2.0f, ORANGE);
                 }
             }
