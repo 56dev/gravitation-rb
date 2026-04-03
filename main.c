@@ -5,6 +5,7 @@
 typedef struct obj_s {
     float mass; 
     Vector2 pos_px; 
+    Vector2 vel_px_s;
 } obj_s;
 
 
@@ -53,15 +54,17 @@ Vector2 calc_g_field_at_point_ignore_one_obj(Vector2 point, obj_s *obj_a, int ob
     return ret;
 }
 Vector2 calc_g_field_at_point(Vector2 point, obj_s *obj_a, int obj_n){
-    calc_g_field_at_point_ignore_one_obj(point, obj_a, obj_n, -1);
-    
+    return calc_g_field_at_point_ignore_one_obj(point, obj_a, obj_n, -1);
 }
 
-void update_objs(obj_s *obj_a, int n) {
+void update_objs(obj_s *obj_a, int n, float dt) {
     for(int i = 0; i < n; ++i) {
         //calculate g-field at obj's point
         Vector2 g = calc_g_field_at_point_ignore_one_obj(obj_a[i].pos_px, obj_a, n, i); 
-        
+        obj_a[i].pos_px.x += obj_a[i].vel_px_s.x * dt;
+        obj_a[i].pos_px.y += obj_a[i].vel_px_s.y * dt;
+        obj_a[i].vel_px_s.x += g.x * dt;
+        obj_a[i].vel_px_s.y += g.y * dt;
     }
 }
 
@@ -73,11 +76,10 @@ int main(void) {
     const int vec_spacing = 15;
     #define num_obj 2
     obj_s objects[num_obj] = {
-        (obj_s){100.0f, (Vector2){screen_width/2, screen_height/2}},
-        (obj_s){300.0f, (Vector2){screen_width/4.0f, screen_height/2}}
+        (obj_s){100.0f, (Vector2){screen_width/2, screen_height/2}, (Vector2){0, 0}},
+        (obj_s){300.0f, (Vector2){screen_width/4.0f, screen_height/2}, (Vector2){0, 0}}
         };
     while (!WindowShouldClose()) {
-        static bool f = false;
         BeginDrawing();
            ClearBackground(RAYWHITE);
             for(int x = 0; x < screen_width; x += vec_spacing){
@@ -97,7 +99,7 @@ int main(void) {
 //                    DrawCircle(x, y, 2.0f, ORANGE);
                 }
             }
-            f = true;
+            update_objs(objects, num_obj, GetFrameTime());
             for(int i = 0; i < num_obj; ++i) {
                 DrawCircleV(objects[i].pos_px,10.0f, RED);
             }
