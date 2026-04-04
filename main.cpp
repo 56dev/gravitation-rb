@@ -2,7 +2,7 @@
 #include <raylib.h>
 #include <raygui.h>
 #include <raymath.h>
-#include <vector.h>
+#include <vector>
 #include <math.h>
 typedef struct obj_s {
     float mass; 
@@ -80,19 +80,19 @@ int main(void) {
     InitWindow(screen_width, screen_height, "gravitation");
     SetTargetFPS(60);
     const int vec_spacing = 15;
-    #define num_obj 2
-    obj_s objects[num_obj] = {
+    std::vector<obj_s> objects = {
         (obj_s){100.0f, (Vector2){screen_width/2, screen_height/2}, (Vector2){0,35.0f}},
         (obj_s){300.0f, (Vector2){screen_width/4.0f, screen_height/2}, (Vector2){20.0f, 0}}
         };
 
     while (!WindowShouldClose()) {
+        int num_obj = objects.size();
         BeginDrawing();
            ClearBackground(RAYWHITE);
             static bool show_arrow_stems = false;
             for(float x = 0; x < play_area_width; x += vec_spacing){
                 for(float y = 0; y < screen_height; y += vec_spacing){
-                    Vector2 g = calc_g_field_at_point((Vector2){x, y}, objects, num_obj);
+                    Vector2 g = calc_g_field_at_point((Vector2){x, y}, objects.data(), num_obj);
                     float mag = sqrt(g.x * g.x + g.y * g.y);
                     #define MAX_MAG 15 
                     if(mag < 0) mag = 0;
@@ -105,7 +105,7 @@ int main(void) {
                     draw_vec_end((Vector2){x,y}, disp, col, show_arrow_stems);
                 }
             }
-            update_objs(objects, num_obj, GetFrameTime());
+            update_objs(objects.data(), num_obj, GetFrameTime());
             for(int i = 0; i < num_obj; ++i) {
                 DrawCircleV(objects[i].pos_px,10.0f, RED);
             }
