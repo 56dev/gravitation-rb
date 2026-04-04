@@ -101,8 +101,7 @@ int main(void) {
                     disp.x *= mag;
                     disp.y *= mag;
                     Color col = (Color){0, 0, 0, 255};
-                    col.b = (mag / MAX_MAG) * 255;
-                    col.g = ((MAX_MAG - mag) / MAX_MAG) * 255;
+                    col = ColorLerp(GREEN, BLUE, mag / MAX_MAG);
                     draw_vec_end((Vector2){x,y}, disp, col, show_arrow_stems);
                 }
             }
