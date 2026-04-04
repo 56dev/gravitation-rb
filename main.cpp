@@ -94,14 +94,15 @@ int main(void) {
                 for(float y = 0; y < screen_height; y += vec_spacing){
                     Vector2 g = calc_g_field_at_point((Vector2){x, y}, objects.data(), num_obj);
                     float mag = sqrt(g.x * g.x + g.y * g.y);
-                    #define MAX_MAG 15 
-                    if(mag < 0) mag = 0;
-                    else if(mag > MAX_MAG) mag = MAX_MAG;
+                    const int MAX_MAG = 15;
+                    if(mag < 0){
+                       mag = 0;
+                    } else if(mag > MAX_MAG){
+                       mag = MAX_MAG;
+                    }
                     Vector2 disp = Vector2Normalize(g);
-                    disp.x *= mag;
-                    disp.y *= mag;
-                    Color col = (Color){0, 0, 0, 255};
-                    col = ColorLerp(GREEN, BLUE, mag / MAX_MAG);
+                    disp = (Vector2){disp.x * mag, disp.y * mag};
+                    Color col = ColorLerp(GREEN, BLUE, mag / MAX_MAG);
                     draw_vec_end((Vector2){x,y}, disp, col, show_arrow_stems);
                 }
             }
