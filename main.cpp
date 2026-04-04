@@ -6,6 +6,7 @@
 #include <math.h>
 typedef struct obj_s {
     float mass; 
+    float rad;
     Vector2 pos_px; 
     Vector2 vel_px_s;
 } obj_s;
@@ -50,7 +51,7 @@ Vector2 calc_g_field_at_point_ignore_one_obj(Vector2 point, obj_s *obj_a, int ob
         float dx = obj_a[i].pos_px.x - point.x;
         float dy = obj_a[i].pos_px.y - point.y;
         float rsq = dx * dx + dy * dy;
-        const int G = 1000;
+        const int G = 10e2;
         float mag = G  *  obj_a[i].mass / rsq;
         Vector2 s = Vector2Normalize((Vector2){dx, dy});
         ret.x += mag * s.x;    
@@ -80,10 +81,7 @@ int main(void) {
     InitWindow(screen_width, screen_height, "gravitation");
     SetTargetFPS(60);
     const int vec_spacing = 15;
-    std::vector<obj_s> objects = {
-        (obj_s){100.0f, (Vector2){screen_width/2, screen_height/2}, (Vector2){0,35.0f}},
-        (obj_s){300.0f, (Vector2){screen_width/4.0f, screen_height/2}, (Vector2){20.0f, 0}}
-        };
+    std::vector<obj_s> objects = {};
 
     while (!WindowShouldClose()) {
         int num_obj = objects.size();
@@ -94,7 +92,7 @@ int main(void) {
                 for(float y = 0; y < screen_height; y += vec_spacing){
                     Vector2 g = calc_g_field_at_point((Vector2){x, y}, objects.data(), num_obj);
                     float mag = sqrt(g.x * g.x + g.y * g.y);
-                    const int MAX_MAG = 15;
+                    const int MAX_MAG = 25;
                     if(mag < 0){
                        mag = 0;
                     } else if(mag > MAX_MAG){
@@ -108,15 +106,31 @@ int main(void) {
             }
             update_objs(objects.data(), num_obj, GetFrameTime());
             for(int i = 0; i < num_obj; ++i) {
-                DrawCircleV(objects[i].pos_px,10.0f, RED);
+                DrawCircleV(objects[i].pos_px, objects[i].rad, RED);
             }
 
-            if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-                Vector2 mp = GetMousePosition();
-                if(CheckCollisionPointRec(mp, (Rectangle){0, 0, play_area_width, screen_height})) {
-                    objects.push_back((obj_s){100.0f, mp, (Vector2){0,0}});        
+            Vector2 mp = GetMousePosition();
+
+            if(CheckCollisionPointRec(mp, (Rectangle){0, 0, play_area_width, screen_height})) {
+                static float m_sel = 300.0f;
+                static float rad_sel = 10.0f;
+                float w = GetMouseWheelMove();
+                if(IsKeyDown(KEY_LEFT_SHIFT)){
+                    int m = (w > 0 ? 1 : -1);
+                    rad_sel += m*w*w*100.0f*GetFrameTime();
+                } else {
+                    m_sel += w*100.0f*GetFrameTime();
                 }
-            }
+                if(m_sel < 0) {m_sel = 0;}
+                DrawCircleLinesV(mp, rad_sel, BLACK);
+                DrawText(TextFormat("M: %.1f", m_sel), mp.x - 10.0f, mp.y - 50.0f, 30.0f, BLACK);
+                if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+                    if(CheckCollisionPointRec(mp, (Rectangle){0, 0, play_area_width, screen_height})) {
+                        objects.push_back((obj_s){m_sel, rad_sel, mp, (Vector2){0,0}});        
+                    }
+                }
+            } 
+            
 
             const float sett_pan_l = screen_width * 1/4.0f;
             Vector2 scroll = (Vector2){0, 0};
