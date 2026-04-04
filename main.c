@@ -25,13 +25,18 @@ void draw_vec_dir(Vector2 pos, float len_px, float angle_rad, Color col){
     draw_arrowhead(angle_rad, tri_hi, tri_b_h, end_pos, col);
 }
 
-void draw_vec_end(Vector2 pos, Vector2 to_end, Color col){
+void draw_vec_end(Vector2 pos, Vector2 to_end, Color col, bool draw_stem){
     if(fabs(to_end.x) < 0.1 && fabs(to_end.y) < 0.1) {
         DrawCircle(pos.x, pos.y, 2.0f, col);
         return;
     }
-    Vector2 end = (Vector2){pos.x + to_end.x, pos.y + to_end.y};
-    DrawLineEx(pos, end, 1.0f, col);
+    Vector2 end;
+    if(draw_stem){
+        end = (Vector2){pos.x + to_end.x, pos.y + to_end.y};
+        DrawLineEx(pos, end, 1.0f, col);
+    } else {
+        end = pos;
+    }
     float thet = atan2f(to_end.y, to_end.x);
     const float tri_hi = 9.0f;
     const float tri_b_h = 4.0f; 
@@ -71,6 +76,7 @@ void update_objs(obj_s *obj_a, int n, float dt) {
 int main(void) {
     const float screen_width = 1600;
     const float screen_height = 900;
+    const float play_area_width = screen_width * 3.0/4.0f;
     InitWindow(screen_width, screen_height, "gravitation");
     SetTargetFPS(60);
     const int vec_spacing = 15;
@@ -84,7 +90,7 @@ int main(void) {
         BeginDrawing();
            ClearBackground(RAYWHITE);
             static bool show_arrow_stems = false;
-            for(int x = 0; x < screen_width; x += vec_spacing){
+            for(int x = 0; x < play_area_width; x += vec_spacing){
                 for(int y = 0; y < screen_height; y += vec_spacing){
                     Vector2 g = calc_g_field_at_point((Vector2){x, y}, objects, num_obj);
                     float mag = sqrt(g.x * g.x + g.y * g.y);
@@ -94,12 +100,10 @@ int main(void) {
                     Vector2 disp = Vector2Normalize(g);
                     disp.x *= mag;
                     disp.y *= mag;
-                    Color col = GREEN;
+                    Color col = (Color){0, 0, 0, 255};
                     col.b = (mag / MAX_MAG) * 255;
                     col.g = ((MAX_MAG - mag) / MAX_MAG) * 255;
-                    if(!show_arrow_stems) {disp.x /= mag * 5; disp.y /= mag * 5;}
-                    draw_vec_end((Vector2){x,y}, disp, col);
-//                    DrawCircle(x, y, 2.0f, ORANGE);
+                    draw_vec_end((Vector2){x,y}, disp, col, show_arrow_stems);
                 }
             }
             update_objs(objects, num_obj, GetFrameTime());
