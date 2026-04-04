@@ -110,8 +110,8 @@ int main(void) {
             }
 
             Vector2 mp = GetMousePosition();
-
-            if(CheckCollisionPointRec(mp, (Rectangle){0, 0, play_area_width, screen_height})) {
+            static bool mouse_out_but_keep_running = false;
+            if(CheckCollisionPointRec(mp, (Rectangle){0, 0, play_area_width, screen_height})|| mouse_out_but_keep_running) {
                 static float m_sel = 300.0f;
                 static float rad_sel = 10.0f;
                 float w = GetMouseWheelMove();
@@ -121,16 +121,28 @@ int main(void) {
                 } else {
                     m_sel += w*100.0f*GetFrameTime();
                 }
-                if(m_sel < 0) {m_sel = 0;}
-                DrawCircleLinesV(mp, rad_sel, BLACK);
-                DrawText(TextFormat("M: %.1f", m_sel), mp.x - 10.0f, mp.y - 50.0f, 30.0f, BLACK);
+                if(m_sel < 0) {
+                    m_sel = 0;
+                }
+                static Vector2 remain;
+                if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
+                    mouse_out_but_keep_running = true;
+                    remain = mp;
+                } 
+                if(mouse_out_but_keep_running) {
+                    DrawCircleLinesV(remain, rad_sel, BLACK);
+                    DrawText(TextFormat("M: %.1f", m_sel), remain.x - 10.0f, remain.y - 50.0f, 30.0f, BLACK);
+                    DrawLineV(remain, mp, GRAY);
+                    draw_vec_end(remain, Vector2Subtract(remain, mp), RED, true);
+                } else {
+                    DrawCircleLinesV(mp, rad_sel, BLACK);
+                    DrawText(TextFormat("M: %.1f", m_sel), mp.x - 10.0f, mp.y - 50.0f, 30.0f, BLACK);
+                }
                 if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-                    if(CheckCollisionPointRec(mp, (Rectangle){0, 0, play_area_width, screen_height})) {
-                        objects.push_back((obj_s){m_sel, rad_sel, mp, (Vector2){0,0}});        
-                    }
+                    objects.push_back((obj_s){m_sel, rad_sel, (mouse_out_but_keep_running ? remain : mp), (Vector2){0,0}});
+                    mouse_out_but_keep_running = false;
                 }
             } 
-            
 
             const float sett_pan_l = screen_width * 1/4.0f;
             Vector2 scroll = (Vector2){0, 0};
