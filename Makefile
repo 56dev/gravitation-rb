@@ -1,7 +1,7 @@
-CC = gcc
+CC = g++
 CFLAGS = -Iinclude -I../../extern_h -Wall -Wextra $(shell pkg-config --cflags raylib)
 LIBS  = $(shell pkg-config --libs raylib) -Llib -lopengl32 -lgdi32 -lwinmm -lcomdlg32
-SRC = main.c 
+SRC = main.cpp
 all:main
 
 main: $(SRC) 
