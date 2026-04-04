@@ -110,6 +110,13 @@ int main(void) {
                 DrawCircleV(objects[i].pos_px,10.0f, RED);
             }
 
+            if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+                Vector2 mp = GetMousePosition();
+                if(CheckCollisionPointRec(mp, (Rectangle){0, 0, play_area_width, screen_height})) {
+                    objects.push_back((obj_s){100.0f, mp, (Vector2){0,0}});        
+                }
+            }
+
             const float sett_pan_l = screen_width * 1/4.0f;
             Vector2 scroll = (Vector2){0, 0};
             Rectangle view = (Rectangle){0, 0, 0, 0};
