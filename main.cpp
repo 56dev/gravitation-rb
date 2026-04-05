@@ -63,7 +63,7 @@ Vector2 calc_g_field_at_point(Vector2 point, obj_s *obj_a, int obj_n){
     return calc_g_field_at_point_ignore_one_obj(point, obj_a, obj_n, -1);
 }
 
-void update_objs(obj_s *obj_a, int n, float dt) {
+void update_objs(obj_s *obj_a, int n, float dt, bool display_vel_force_vectors) {
     for(int i = 0; i < n; ++i) {
         //calculate g-field at obj's point
         Vector2 g = calc_g_field_at_point_ignore_one_obj(obj_a[i].pos_px, obj_a, n, i); 
@@ -71,22 +71,13 @@ void update_objs(obj_s *obj_a, int n, float dt) {
         obj_a[i].pos_px.y += obj_a[i].vel_px_s.y * dt;
         obj_a[i].vel_px_s.x += g.x * dt;
         obj_a[i].vel_px_s.y += g.y * dt;
-    }
-}
-
-void update_objs_force_vector(obj_s *obj_a, int n, float dt) {
-    for(int i = 0; i < n; ++i) {
-        //calculate g-field at obj's point
-        Vector2 g = calc_g_field_at_point_ignore_one_obj(obj_a[i].pos_px, obj_a, n, i); 
-        obj_a[i].pos_px.x += obj_a[i].vel_px_s.x * dt;
-        obj_a[i].pos_px.y += obj_a[i].vel_px_s.y * dt;
-        obj_a[i].vel_px_s.x += g.x * dt;
-        obj_a[i].vel_px_s.y += g.y * dt;
-        Vector2 d = (Vector2){g.x * 10, g.y * 10};
-        d = Vector2ClampValue(d,0,  600);
-        draw_vec_end(obj_a[i].pos_px, d, RED, true);
-        draw_vec_end(obj_a[i].pos_px, (Vector2){obj_a[i].vel_px_s.x, 0}, GRAY, true);
-        draw_vec_end(obj_a[i].pos_px, (Vector2){0, obj_a[i].vel_px_s.y}, GRAY, true);
+        if(display_vel_force_vectors) {
+            Vector2 d = (Vector2){g.x * 10, g.y * 10};
+            d = Vector2ClampValue(d,0,  600);
+            draw_vec_end(obj_a[i].pos_px, d, RED, true);
+            draw_vec_end(obj_a[i].pos_px, (Vector2){obj_a[i].vel_px_s.x, 0}, GRAY, true);
+            draw_vec_end(obj_a[i].pos_px, (Vector2){0, obj_a[i].vel_px_s.y}, GRAY, true);
+        }
     }
 }
 
@@ -127,8 +118,7 @@ int main(void) {
                     }
                 }
             }
-            if (disp_mode == DISP_FIELDS)update_objs(objects.data(), num_obj, GetFrameTime());
-            else if (disp_mode == DISP_VECTORS) update_objs_force_vector(objects.data(), num_obj, GetFrameTime());
+            update_objs(objects.data(), num_obj, GetFrameTime(), disp_mode == DISP_VECTORS);
             for(int i = 0; i < num_obj; ++i) {
                 DrawCircleV(objects[i].pos_px, objects[i].rad, RED);
             }
