@@ -2,6 +2,7 @@
 #include <raylib.h>
 #include <raygui.h>
 #include <raymath.h>
+#include <stdio.h>
 #include <vector>
 #include <math.h>
 typedef struct obj_s {
@@ -81,6 +82,22 @@ void update_objs(obj_s *obj_a, int n, float dt, bool display_vel_force_vectors) 
     }
 }
 
+void check_out_of_bounds(std::vector<obj_s>& obj_a, Rectangle play_area, float max_dist) {
+    int n = obj_a.size();
+    for(int i = n - 1; i >= 0; --i) {
+        Vector2 p = obj_a[i].pos_px;
+        if(p.x < play_area.x - max_dist || p.x > play_area.x + play_area.width + max_dist) {
+            obj_a.erase(obj_a.begin() + i);
+            printf("idx %i deleted", i);
+        } else if (p.y < play_area.y - max_dist || p.y > play_area.y + play_area.height + max_dist) {
+            obj_a.erase(obj_a.begin() + i);
+            printf("idx %i deleted", i);
+        }
+       
+    }
+
+}
+
 int main(void) {
     const float screen_width = 1600;
     const float screen_height = 900;
@@ -122,6 +139,8 @@ int main(void) {
             for(int i = 0; i < num_obj; ++i) {
                 DrawCircleV(objects[i].pos_px, objects[i].rad, RED);
             }
+
+            check_out_of_bounds(objects, (Rectangle){0, 0, play_area_width, screen_height}, 600.0f);
 
             Vector2 mp = GetMousePosition();
             static bool mouse_out_but_keep_running = false;
@@ -190,14 +209,27 @@ int main(void) {
                 const float toggle_btns_h = 50.0f;
                 const float marg_x = 35.0f;
                 const float marg_y = 10.0f;
-                const int num_elem = 2;
+                const int ui_num_elem_DISP_FIELDS = 2;
+                const int ui_num_elem_DISP_VECTOR = 1;
+                int num_elem;
+                switch (disp_mode) {
+                    case DISP_FIELDS:
+                        num_elem = ui_num_elem_DISP_FIELDS;
+                        break;
+                    case DISP_VECTORS:
+                        num_elem = ui_num_elem_DISP_VECTOR;
+                        break;                    
+                }
+
                 Rectangle r = (Rectangle){view.x + marg_x - scroll.x, view.y + marg_y * (num_elem) + toggle_btns_h * (num_elem-1) + scroll.y, view.width - marg_x*2, toggle_btns_h};
 
                 static bool disp_db_open = false;
-                bool TEMP_s_a_s = show_arrow_stems;
-                GuiToggle(r, "TOGGLE ARROW STEMS", &TEMP_s_a_s);
-                if(ui_layer_mode == UI_LAYER_BASE) show_arrow_stems = TEMP_s_a_s;
-                r.y -= toggle_btns_h + marg_y;
+                if(disp_mode == DISP_FIELDS) {
+                    bool TEMP_s_a_s = show_arrow_stems;
+                    GuiToggle(r, "TOGGLE ARROW STEMS", &TEMP_s_a_s);
+                    if(ui_layer_mode == UI_LAYER_BASE) show_arrow_stems = TEMP_s_a_s;
+                    r.y -= toggle_btns_h + marg_y;
+                }
                 if(GuiDropdownBox(r, "Gravitational Field;Velocity + Force Vectors", &disp_mode, disp_db_open)) {
                     disp_db_open = !disp_db_open;
                 }
