@@ -106,21 +106,23 @@ int main(void) {
         BeginDrawing();
            ClearBackground(RAYWHITE);
             static bool show_arrow_stems = false;
-            for(float x = 0; x < play_area_width; x += vec_spacing){
-                for(float y = 0; y < screen_height; y += vec_spacing){
-                    Vector2 g = calc_g_field_at_point((Vector2){x, y}, objects.data(), num_obj);
-                    float mag = sqrt(g.x * g.x + g.y * g.y);
-                    const int MAX_MAG = 30;
-                    if(mag < 0){
-                       mag = 0;
-                    } else if(mag > MAX_MAG){
-                       mag = MAX_MAG;
+            if(disp_mode == DISP_FIELDS) {
+                for(float x = 0; x < play_area_width; x += vec_spacing){
+                    for(float y = 0; y < screen_height; y += vec_spacing){
+                        Vector2 g = calc_g_field_at_point((Vector2){x, y}, objects.data(), num_obj);
+                        float mag = sqrt(g.x * g.x + g.y * g.y);
+                        const int MAX_MAG = 30;
+                        if(mag < 0){
+                           mag = 0;
+                        } else if(mag > MAX_MAG){
+                           mag = MAX_MAG;
+                        }
+                        Vector2 disp = Vector2Normalize(g);
+                        Color col = ColorLerp(GREEN, BLUE, mag / MAX_MAG);
+                        const int MAX_DIS_LEN = 20;
+                        disp = (Vector2){disp.x * mag / MAX_MAG * MAX_DIS_LEN, disp.y * mag / MAX_MAG * MAX_DIS_LEN};
+                        draw_vec_end((Vector2){x,y}, disp, col, show_arrow_stems);
                     }
-                    Vector2 disp = Vector2Normalize(g);
-                    Color col = ColorLerp(GREEN, BLUE, mag / MAX_MAG);
-                    const int MAX_DIS_LEN = 20;
-                    disp = (Vector2){disp.x * mag / MAX_MAG * MAX_DIS_LEN, disp.y * mag / MAX_MAG * MAX_DIS_LEN};
-                    draw_vec_end((Vector2){x,y}, disp, col, show_arrow_stems);
                 }
             }
             if (disp_mode == DISP_FIELDS)update_objs(objects.data(), num_obj, GetFrameTime());
