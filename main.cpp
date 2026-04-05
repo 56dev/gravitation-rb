@@ -85,6 +85,8 @@ void update_objs_force_vector(obj_s *obj_a, int n, float dt) {
         Vector2 d = (Vector2){g.x * 10, g.y * 10};
         d = Vector2ClampValue(d,0,  600);
         draw_vec_end(obj_a[i].pos_px, d, RED, true);
+        draw_vec_end(obj_a[i].pos_px, (Vector2){obj_a[i].vel_px_s.x, 0}, GRAY, true);
+        draw_vec_end(obj_a[i].pos_px, (Vector2){0, obj_a[i].vel_px_s.y}, GRAY, true);
     }
 }
 
@@ -206,7 +208,7 @@ int main(void) {
                 GuiToggle(r, "TOGGLE ARROW STEMS", &TEMP_s_a_s);
                 if(ui_layer_mode == UI_LAYER_BASE) show_arrow_stems = TEMP_s_a_s;
                 r.y -= toggle_btns_h + marg_y;
-                if(GuiDropdownBox(r, "FIELD;FORCE_VECTORS", &disp_mode, disp_db_open)) {
+                if(GuiDropdownBox(r, "Gravitational Field;Velocity + Force Vectors", &disp_mode, disp_db_open)) {
                     disp_db_open = !disp_db_open;
                 }
 
