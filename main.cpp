@@ -125,22 +125,39 @@ int main(void) {
                     m_sel = 0;
                 }
                 static Vector2 remain;
+                static Vector2 vel;
                 if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
                     mouse_out_but_keep_running = true;
                     remain = mp;
                 } 
+                static bool cancelled_til_next_release = false;
                 if(mouse_out_but_keep_running) {
+                    if(IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
+                        mouse_out_but_keep_running = false;
+                        cancelled_til_next_release = true;
+                    }
                     DrawCircleLinesV(remain, rad_sel, BLACK);
                     DrawText(TextFormat("M: %.1f", m_sel), remain.x - 10.0f, remain.y - 50.0f, 30.0f, BLACK);
                     DrawLineV(remain, mp, GRAY);
-                    draw_vec_end(remain, Vector2Subtract(remain, mp), RED, true);
+                    vel = Vector2Subtract(remain, mp);
+                    draw_vec_end(remain, vel, RED, true);
+                    float mag = Vector2Length(vel);
+                    const char *v = TextFormat("V: %.1f px/s", mag);
+                    Vector2 sz = MeasureTextEx(GetFontDefault(), v, 30.0f, 1.0f);
+                    const int vmarg = 5;
+                    DrawRectangle(mp.x - vmarg, mp.y - 50.0f, sz.x + vmarg*2, sz.y + vmarg*2, RAYWHITE);
+                    DrawText(v, mp.x, mp.y - 50.0f, 30.0f, BLACK);
                 } else {
                     DrawCircleLinesV(mp, rad_sel, BLACK);
                     DrawText(TextFormat("M: %.1f", m_sel), mp.x - 10.0f, mp.y - 50.0f, 30.0f, BLACK);
                 }
                 if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-                    objects.push_back((obj_s){m_sel, rad_sel, (mouse_out_but_keep_running ? remain : mp), (Vector2){0,0}});
-                    mouse_out_but_keep_running = false;
+                    if(cancelled_til_next_release) {
+                        cancelled_til_next_release = false;
+                    } else {
+                        objects.push_back((obj_s){m_sel, rad_sel, (mouse_out_but_keep_running ? remain : mp), (mouse_out_but_keep_running ? vel : (Vector2){0, 0})});
+                        mouse_out_but_keep_running = false;
+                    }
                 }
             } 
 
