@@ -167,6 +167,11 @@ int main(void) {
             } 
 
             const float sett_pan_l = screen_width * 1/4.0f;
+            enum {
+                UI_LAYER_BASE,
+                UI_LAYER_DROPDOWN
+            };
+            static int ui_layer_mode = UI_LAYER_BASE;
             Vector2 scroll = (Vector2){0, 0};
             Rectangle view = (Rectangle){0, 0, 0, 0};
             Rectangle panel = (Rectangle){screen_width - sett_pan_l, 0, sett_pan_l, screen_height};
@@ -178,11 +183,20 @@ int main(void) {
                 const float marg_y = 10.0f;
                 const int num_elem = 2;
                 Rectangle r = (Rectangle){view.x + marg_x - scroll.x, view.y + marg_y * (num_elem) + toggle_btns_h * (num_elem-1) + scroll.y, view.width - marg_x*2, toggle_btns_h};
-                GuiToggle(r, "TOGGLE ARROW STEMS", &show_arrow_stems);
-                r.y -= toggle_btns_h + marg_y;
+
                 static bool disp_db_open = false;
+                bool TEMP_s_a_s = show_arrow_stems;
+                GuiToggle(r, "TOGGLE ARROW STEMS", &TEMP_s_a_s);
+                if(ui_layer_mode == UI_LAYER_BASE) show_arrow_stems = TEMP_s_a_s;
+                r.y -= toggle_btns_h + marg_y;
                 if(GuiDropdownBox(r, "FIELD;FORCE_VECTORS", &disp_mode, disp_db_open)) {
                     disp_db_open = !disp_db_open;
+                }
+
+                if(disp_db_open) {
+                    ui_layer_mode = UI_LAYER_DROPDOWN;
+                } else {
+                    ui_layer_mode = UI_LAYER_BASE;
                 }
             EndScissorMode();
             EndDrawing();
