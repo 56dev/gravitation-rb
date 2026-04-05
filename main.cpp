@@ -82,9 +82,13 @@ int main(void) {
     SetTargetFPS(60);
     const int vec_spacing = 15;
     std::vector<obj_s> objects = {};
-
+    enum {
+        DISP_FIELDS,
+        DISP_VECTORS
+    };
     while (!WindowShouldClose()) {
         int num_obj = objects.size();
+        static int disp_mode = DISP_FIELDS; 
         BeginDrawing();
            ClearBackground(RAYWHITE);
             static bool show_arrow_stems = false;
@@ -92,15 +96,16 @@ int main(void) {
                 for(float y = 0; y < screen_height; y += vec_spacing){
                     Vector2 g = calc_g_field_at_point((Vector2){x, y}, objects.data(), num_obj);
                     float mag = sqrt(g.x * g.x + g.y * g.y);
-                    const int MAX_MAG = 25;
+                    const int MAX_MAG = 30;
                     if(mag < 0){
                        mag = 0;
                     } else if(mag > MAX_MAG){
                        mag = MAX_MAG;
                     }
                     Vector2 disp = Vector2Normalize(g);
-                    disp = (Vector2){disp.x * mag, disp.y * mag};
                     Color col = ColorLerp(GREEN, BLUE, mag / MAX_MAG);
+                    const int MAX_DIS_LEN = 20;
+                    disp = (Vector2){disp.x * mag / MAX_MAG * MAX_DIS_LEN, disp.y * mag / MAX_MAG * MAX_DIS_LEN};
                     draw_vec_end((Vector2){x,y}, disp, col, show_arrow_stems);
                 }
             }
@@ -112,8 +117,8 @@ int main(void) {
             Vector2 mp = GetMousePosition();
             static bool mouse_out_but_keep_running = false;
             if(CheckCollisionPointRec(mp, (Rectangle){0, 0, play_area_width, screen_height})|| mouse_out_but_keep_running) {
-                static float m_sel = 300.0f;
-                static float rad_sel = 10.0f;
+                static float m_sel = 500.0f;
+                static float rad_sel = 3.0f;
                 float w = GetMouseWheelMove();
                 if(IsKeyDown(KEY_LEFT_SHIFT)){
                     int m = (w > 0 ? 1 : -1);
@@ -171,7 +176,14 @@ int main(void) {
                 const float toggle_btns_h = 50.0f;
                 const float marg_x = 35.0f;
                 const float marg_y = 10.0f;
-                GuiToggle((Rectangle){view.x + marg_x - scroll.x, view.y + marg_y + scroll.y, view.width - marg_x*2, toggle_btns_h}, "TOGGLE ARROW STEMS", &show_arrow_stems);
+                const int num_elem = 2;
+                Rectangle r = (Rectangle){view.x + marg_x - scroll.x, view.y + marg_y * (num_elem) + toggle_btns_h * (num_elem-1) + scroll.y, view.width - marg_x*2, toggle_btns_h};
+                GuiToggle(r, "TOGGLE ARROW STEMS", &show_arrow_stems);
+                r.y -= toggle_btns_h + marg_y;
+                static bool disp_db_open = false;
+                if(GuiDropdownBox(r, "FIELD;FORCE_VECTORS", &disp_mode, disp_db_open)) {
+                    disp_db_open = !disp_db_open;
+                }
             EndScissorMode();
             EndDrawing();
     }
