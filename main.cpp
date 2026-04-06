@@ -137,6 +137,7 @@ int main(void) {
         BeginDrawing();
            ClearBackground(RAYWHITE);
             static bool show_arrow_stems = false;
+            static bool show_paths = false; 
             if(disp_mode == DISP_FIELDS) {
                 for(float x = 0; x < play_area_width; x += vec_spacing){
                     for(float y = 0; y < screen_height; y += vec_spacing){
@@ -160,12 +161,14 @@ int main(void) {
             for(int i = 0; i < num_obj; ++i) {
                 DrawCircleV(objects[i].pos_px, objects[i].rad, RED);
             }
-
-            for(int i = 0; i < num_obj; ++i) {
-                add_to_previous_positions(&objects[i], 2000);
-                display_previous_positions(objects[i]);
-            }
-           
+                for(int i = 0; i < num_obj; ++i) {
+                    add_to_previous_positions(&objects[i], 2000);
+                    
+                    if(show_paths) {
+                        display_previous_positions(objects[i]);
+                    }
+                }
+            
             check_out_of_bounds(objects, (Rectangle){0, 0, play_area_width, screen_height}, 3000.0f);
 
             Vector2 mp = GetMousePosition();
@@ -236,8 +239,8 @@ int main(void) {
                 const float toggle_btns_h = 50.0f;
                 const float marg_x = 35.0f;
                 const float marg_y = 10.0f;
-                const int ui_num_elem_DISP_FIELDS = 2;
-                const int ui_num_elem_DISP_VECTOR = 1;
+                const int ui_num_elem_DISP_FIELDS = 4;
+                const int ui_num_elem_DISP_VECTOR = 3;
                 int num_elem;
                 switch (disp_mode) {
                     case DISP_FIELDS:
@@ -251,12 +254,24 @@ int main(void) {
                 Rectangle r = (Rectangle){view.x + marg_x - scroll.x, view.y + marg_y * (num_elem) + toggle_btns_h * (num_elem-1) + scroll.y, view.width - marg_x*2, toggle_btns_h};
 
                 static bool disp_db_open = false;
+                bool del_flag = false;
+                if(ui_layer_mode == UI_LAYER_BASE) del_flag = GuiButton(r, "DELETE ALL OBJECTS");
+                if(del_flag) {
+                    objects.clear();
+                }
+                r.y -= toggle_btns_h + marg_y;
                 if(disp_mode == DISP_FIELDS) {
                     bool TEMP_s_a_s = show_arrow_stems;
                     GuiToggle(r, "TOGGLE ARROW STEMS", &TEMP_s_a_s);
                     if(ui_layer_mode == UI_LAYER_BASE) show_arrow_stems = TEMP_s_a_s;
                     r.y -= toggle_btns_h + marg_y;
                 }
+
+                bool TEMP_sh_pa = show_paths;
+                GuiToggle(r, "SHOW PATHS", &TEMP_sh_pa);
+                if(ui_layer_mode == UI_LAYER_BASE) show_paths = TEMP_sh_pa;
+                r.y -= toggle_btns_h + marg_y;
+
                 if(GuiDropdownBox(r, "Gravitational Field;Velocity + Force Vectors", &disp_mode, disp_db_open)) {
                     disp_db_open = !disp_db_open;
                 }
