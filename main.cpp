@@ -10,6 +10,7 @@ typedef struct obj_s {
     float rad;
     Vector2 pos_px; 
     Vector2 vel_px_s;
+    std::vector<Vector2> prev_pos_px_a;
 } obj_s;
 
 void draw_arrowhead(float angle_rad, float tri_hi, float tri_b_h, Vector2 apex_pos, Color col){
@@ -62,6 +63,26 @@ Vector2 calc_g_field_at_point_ignore_one_obj(Vector2 point, obj_s *obj_a, int ob
 }
 Vector2 calc_g_field_at_point(Vector2 point, obj_s *obj_a, int obj_n){
     return calc_g_field_at_point_ignore_one_obj(point, obj_a, obj_n, -1);
+}
+void add_to_previous_positions(obj_s *obj, int max_in_buf) {
+    
+    obj->prev_pos_px_a.push_back(obj->pos_px);
+    if(obj->prev_pos_px_a.size() > max_in_buf) {
+        obj->prev_pos_px_a.erase(obj->prev_pos_px_a.begin());
+    }
+}
+void display_previous_positions(obj_s obj) {
+    int n = obj.prev_pos_px_a.size();
+    for(int i = 0; i < n; ++i) {
+        Vector2 next;
+        if(i == n - 1) {
+            next = obj.pos_px;
+        } else {
+            next =obj.prev_pos_px_a[i + 1];
+        }
+        DrawLineEx(obj.prev_pos_px_a[i], next, 2.5f, ORANGE);
+
+    }
 }
 
 void update_objs(obj_s *obj_a, int n, float dt, bool display_vel_force_vectors) {
@@ -140,7 +161,12 @@ int main(void) {
                 DrawCircleV(objects[i].pos_px, objects[i].rad, RED);
             }
 
-            check_out_of_bounds(objects, (Rectangle){0, 0, play_area_width, screen_height}, 600.0f);
+            for(int i = 0; i < num_obj; ++i) {
+                add_to_previous_positions(&objects[i], 2000);
+                display_previous_positions(objects[i]);
+            }
+           
+            check_out_of_bounds(objects, (Rectangle){0, 0, play_area_width, screen_height}, 3000.0f);
 
             Vector2 mp = GetMousePosition();
             static bool mouse_out_but_keep_running = false;
@@ -188,13 +214,14 @@ int main(void) {
                     if(cancelled_til_next_release) {
                         cancelled_til_next_release = false;
                     } else {
-                        objects.push_back((obj_s){m_sel, rad_sel, (mouse_out_but_keep_running ? remain : mp), (mouse_out_but_keep_running ? vel : (Vector2){0, 0})});
+                        objects.push_back((obj_s){m_sel, rad_sel, (mouse_out_but_keep_running ? remain : mp), (mouse_out_but_keep_running ? vel : (Vector2){0, 0}), {}});
                         mouse_out_but_keep_running = false;
                     }
                 }
             } 
-
+            
             const float sett_pan_l = screen_width * 1/4.0f;
+            DrawRectangle(30, 30, 100, 50, GRAY);
             enum {
                 UI_LAYER_BASE,
                 UI_LAYER_DROPDOWN
